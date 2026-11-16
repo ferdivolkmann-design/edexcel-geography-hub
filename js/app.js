@@ -7,6 +7,10 @@ import { MapComponent } from './components/map.js';
 import { CardList } from './components/cardList.js';
 import { DetailDrawer } from './components/detailDrawer.js';
 import { StudyModal } from './components/modal.js';
+import { ExamModal } from './components/examModal.js';
+import { FlashcardsModal } from './components/flashcards.js';
+import { CheatSheetModal } from './components/cheatSheet.js';
+import { SynopticModal } from './components/synopticModal.js';
 
 class EdexcelApp {
   constructor() {
@@ -20,6 +24,10 @@ class EdexcelApp {
     this.cardList = null;
     this.detailDrawer = null;
     this.modal = null;
+    this.examModal = null;
+    this.flashcardsModal = null;
+    this.cheatSheetModal = null;
+    this.synopticModal = null;
   }
 
   init() {
@@ -34,6 +42,7 @@ class EdexcelApp {
     this.initCardList();
     this.initDetailDrawer();
     this.initModal();
+    this.initExamModals();
 
     // 3. Populate Topic Filter Dropdown
     this.populateTopicFilter();
@@ -99,7 +108,10 @@ class EdexcelApp {
     this.cardList = new CardList('case-study-list-container', {
       onSelect: (id) => this.selectCaseStudy(id, true),
       onFlyTo: (lat, lng) => this.map.flyToCoordinates(lat, lng, 6),
-      onDelete: (id) => this.confirmDelete(id)
+      onDelete: (id) => this.confirmDelete(id),
+      onConfidenceChanged: () => {
+        this.syncFilterTabs();
+      }
     });
   }
 
@@ -125,6 +137,38 @@ class EdexcelApp {
       },
       onMinimize: () => {
         this.setSidebarState('minimized');
+      },
+      onOpenExamPractice: (study) => {
+        this.examModal.open(study);
+      },
+      onConfidenceChanged: () => {
+        this.cardList.render();
+        this.syncFilterTabs();
+      }
+    });
+  }
+
+  initExamModals() {
+    this.examModal = new ExamModal({
+      onSaveNote: (studyId, note) => {
+        StorageService.setStudentNote(studyId, note);
+        this.showToast('Essay scratchpad plan saved!');
+      }
+    });
+
+    this.flashcardsModal = new FlashcardsModal({
+      onConfidenceChanged: () => {
+        this.cardList.render();
+        this.syncFilterTabs();
+      }
+    });
+
+    this.cheatSheetModal = new CheatSheetModal();
+
+    this.synopticModal = new SynopticModal({
+      onSelectStudy: (id) => {
+        this.synopticModal.close();
+        this.selectCaseStudy(id, true);
       }
     });
   }
@@ -183,6 +227,31 @@ class EdexcelApp {
     const blurToggleBtn = document.getElementById('toggle-exam-blur');
     if (blurToggleBtn) {
       blurToggleBtn.onclick = () => this.toggleExamBlur();
+    }
+
+    // Flashcard Recall Trainer
+    const fcBtn = document.getElementById('header-flashcards-btn');
+    if (fcBtn) {
+      fcBtn.onclick = () => {
+        const filtered = this.cardList.getFilteredStudies();
+        this.flashcardsModal.open(filtered.length > 0 ? filtered : this.caseStudies);
+      };
+    }
+
+    // Exam Morning Cheat Sheet
+    const csBtn = document.getElementById('header-cheatsheet-btn');
+    if (csBtn) {
+      csBtn.onclick = () => {
+        this.cheatSheetModal.open(this.caseStudies);
+      };
+    }
+
+    // Paper 3 Synoptic Matrix
+    const synopticBtn = document.getElementById('header-synoptic-btn');
+    if (synopticBtn) {
+      synopticBtn.onclick = () => {
+        this.synopticModal.open(this.caseStudies);
+      };
     }
 
     // Add Case Study Button
@@ -284,6 +353,24 @@ class EdexcelApp {
       };
     }
 
+    // Edexcel Paper Tabs (All / Paper 1 / Paper 2 / Paper 3)
+    const paperTabs = document.querySelectorAll('.paper-tab-btn');
+    paperTabs.forEach(btn => {
+      btn.onclick = () => {
+        const paper = btn.dataset.paper;
+        this.cardList.setFilters(undefined, undefined, undefined, paper, undefined);
+        this.syncFilterTabs();
+      };
+    });
+
+    // Confidence Level Filter
+    const confFilter = document.getElementById('confidence-filter');
+    if (confFilter) {
+      confFilter.onchange = (e) => {
+        this.cardList.setFilters(undefined, undefined, undefined, undefined, e.target.value);
+      };
+    }
+
     // Category Tabs (All / Physical / Human)
     const tabBtns = document.querySelectorAll('.cat-tab-btn');
     tabBtns.forEach(btn => {
@@ -362,6 +449,16 @@ class EdexcelApp {
   }
 
   syncFilterTabs() {
+    const curPaper = this.cardList.selectedPaper || 'All';
+    const paperTabs = document.querySelectorAll('.paper-tab-btn');
+    paperTabs.forEach(btn => {
+      if (btn.dataset.paper === curPaper) {
+        btn.className = 'paper-tab-btn px-2.5 py-1 rounded-md text-xs font-bold bg-indigo-600 text-white shadow-xs transition shrink-0 cursor-pointer';
+      } else {
+        btn.className = 'paper-tab-btn px-2.5 py-1 rounded-md text-xs font-semibold text-slate-600 hover:bg-slate-200 transition shrink-0 cursor-pointer';
+      }
+    });
+
     const curCat = this.cardList.selectedCategory;
     const tabBtns = document.querySelectorAll('.cat-tab-btn');
     tabBtns.forEach(btn => {

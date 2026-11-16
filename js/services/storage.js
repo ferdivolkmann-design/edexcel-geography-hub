@@ -4,8 +4,51 @@
 import { INITIAL_CASE_STUDIES } from '../data/initialData.js';
 
 const STORAGE_KEY = 'edexcel_geography_case_studies_v1';
+const CONFIDENCE_KEY = 'edexcel_confidence_ratings_v1';
+const STUDENT_NOTES_KEY = 'edexcel_student_notes_v1';
 
 export class StorageService {
+  static getConfidenceRatings() {
+    try {
+      const data = localStorage.getItem(CONFIDENCE_KEY);
+      return data ? JSON.parse(data) : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  static setConfidenceRating(studyId, rating) {
+    try {
+      const current = this.getConfidenceRatings();
+      current[studyId] = rating;
+      localStorage.setItem(CONFIDENCE_KEY, JSON.stringify(current));
+      return current;
+    } catch (e) {
+      console.error('Error saving confidence rating:', e);
+      return {};
+    }
+  }
+
+  static getStudentNotes() {
+    try {
+      const data = localStorage.getItem(STUDENT_NOTES_KEY);
+      return data ? JSON.parse(data) : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  static setStudentNote(studyId, note) {
+    try {
+      const current = this.getStudentNotes();
+      current[studyId] = note;
+      localStorage.setItem(STUDENT_NOTES_KEY, JSON.stringify(current));
+      return current;
+    } catch (e) {
+      console.error('Error saving student note:', e);
+      return {};
+    }
+  }
   static getCaseStudies() {
     try {
       const data = localStorage.getItem(STORAGE_KEY);

@@ -398,7 +398,159 @@ def main():
         assert markers_after_del == marker_count, f"Expected {marker_count} map markers, got {markers_after_del}"
         assert not card_exists, "Deleted case study card should no longer exist in DOM"
 
-        # 8. Take screenshot
+        # 8. Test Paper Filter Tabs
+        print("\n--- Testing Paper Filter Tabs ---")
+        p1_btn = evaluate("Boolean(document.querySelector('.paper-tab-btn[data-paper=\"Paper 1\"]'))")
+        assert p1_btn, "Expected Paper 1 tab button"
+        evaluate("document.querySelector('.paper-tab-btn[data-paper=\"Paper 1\"]').click()")
+        time.sleep(0.4)
+        p1_cards = evaluate("document.querySelectorAll('#case-study-list-container [data-card-id]').length")
+        print(f"Paper 1 filtered cards: {p1_cards}")
+        assert p1_cards > 0 and p1_cards < study_count, "Paper 1 filter should show subset of cards"
+
+        evaluate("document.querySelector('.paper-tab-btn[data-paper=\"Paper 2\"]').click()")
+        time.sleep(0.4)
+        p2_cards = evaluate("document.querySelectorAll('#case-study-list-container [data-card-id]').length")
+        print(f"Paper 2 filtered cards: {p2_cards}")
+        assert p2_cards > 0 and p2_cards < study_count, "Paper 2 filter should show subset of cards"
+
+        # Reset to All Papers
+        evaluate("document.querySelector('.paper-tab-btn[data-paper=\"All\"]').click()")
+        time.sleep(0.4)
+        all_cards = evaluate("document.querySelectorAll('#case-study-list-container [data-card-id]').length")
+        assert all_cards == study_count, f"Expected {study_count} cards after resetting paper filter, got {all_cards}"
+
+        # 9. Test Confidence Tracker & Mastery Progress Bar
+        print("\n--- Testing Confidence Tracker (Traffic Light) ---")
+        first_study_id = evaluate("window.edexcelApp.caseStudies[0].id")
+        # Click green button on first card
+        green_clicked = evaluate(f"""
+            const btn = document.querySelector('[data-card-id=\"{first_study_id}\"] [data-rating=\"mastered\"]');
+            if (btn) {{ btn.click(); true; }} else {{ false; }}
+        """)
+        assert green_clicked, "Expected green confidence button on card"
+        time.sleep(0.4)
+
+        # Check storage rating
+        stored_rating = evaluate(f"JSON.parse(localStorage.getItem('edexcel_confidence_ratings_v1') || '{{}}')['{first_study_id}']")
+        print(f"Stored confidence rating for {first_study_id}: {stored_rating}")
+        assert stored_rating == "mastered", f"Expected 'mastered', got {stored_rating}"
+
+        # 10. Test Exam Practice Modal (12-mark & 20-mark timer + scratchpad)
+        print("\n--- Testing 12/20-Mark Exam Practice Modal ---")
+        # Select first study to open detail drawer
+        evaluate(f"window.edexcelApp.selectCaseStudy('{first_study_id}', false)")
+        time.sleep(0.4)
+        exam_practice_btn = evaluate("Boolean(document.getElementById('detail-exam-practice-btn'))")
+        assert exam_practice_btn, "Expected '🎲 Practice Essay' button in drawer header"
+        evaluate("document.getElementById('detail-exam-practice-btn').click()")
+        time.sleep(0.5)
+
+        exam_modal_open = evaluate("Boolean(document.querySelector('#exam-practice-modal-container [data-mark-btn]'))")
+        print(f"Exam practice modal open: {exam_modal_open}")
+        assert exam_modal_open, "Expected Exam Practice Modal to be visible"
+
+        # Switch to 12 marks
+        evaluate("document.querySelector('#exam-practice-modal-container [data-mark-btn=\"12\"]').click()")
+        time.sleep(0.3)
+        cur_marks = evaluate("window.edexcelApp.examModal.selectedMarks")
+        print(f"Active question marks: {cur_marks}")
+        assert cur_marks == 12, f"Expected 12 marks, got {cur_marks}"
+
+        # Type in essay scratchpad
+        evaluate("""
+            const input = document.getElementById('exam-scratchpad-input');
+            if (input) {
+                input.value = 'Introduction: Assess the severity of tectonic hazards based on governance and vulnerability...';
+                input.dispatchEvent(new Event('input'));
+            }
+        """)
+        time.sleep(0.3)
+        saved_note = evaluate(f"JSON.parse(localStorage.getItem('edexcel_student_notes_v1') || '{{}}')['{first_study_id}']")
+        print(f"Essay plan saved in notes: '{saved_note[:45]}...'")
+        assert "tectonic hazards" in saved_note, "Expected essay plan to be saved to localStorage"
+
+        # Close exam modal
+        evaluate("document.getElementById('exam-modal-close-btn').click()")
+        time.sleep(0.3)
+        exam_modal_closed = evaluate("document.getElementById('exam-practice-modal-container').children.length === 0")
+        assert exam_modal_closed, "Expected Exam Practice modal to close"
+
+        # 11. Test Quick-Fire Flashcards Recall Trainer
+        print("\n--- Testing Flashcard Recall Trainer ---")
+        evaluate("document.getElementById('header-flashcards-btn').click()")
+        time.sleep(0.5)
+        fc_modal_open = evaluate("Boolean(document.getElementById('flashcard-card'))")
+        print(f"Flashcards modal open: {fc_modal_open}")
+        assert fc_modal_open, "Expected Flashcards modal to open"
+
+        # Flip card to back
+        evaluate("document.getElementById('flashcard-card').click()")
+        time.sleep(0.3)
+        is_flipped = evaluate("window.edexcelApp.flashcardsModal.isFlipped")
+        print(f"Flashcard flipped to answer: {is_flipped}")
+        assert is_flipped, "Card should be flipped"
+
+        # Rate recall as mastered (green) - auto-advances smoothly to card 1
+        evaluate("document.getElementById('fc-rate-green').click()")
+        time.sleep(0.5)
+        advanced_idx = evaluate("window.edexcelApp.flashcardsModal.currentIndex")
+        print(f"Auto-advanced after rating to index: {advanced_idx}")
+        assert advanced_idx == 1, f"Expected index 1 after rating auto-advance, got {advanced_idx}"
+
+        # Test Previous button
+        evaluate("document.getElementById('fc-prev-btn').click()")
+        time.sleep(0.3)
+        prev_idx = evaluate("window.edexcelApp.flashcardsModal.currentIndex")
+        print(f"Returned via Previous button to index: {prev_idx}")
+        assert prev_idx == 0, f"Expected index 0 after Previous, got {prev_idx}"
+
+        # Close flashcard modal
+        evaluate("document.getElementById('fc-close-btn').click()")
+        time.sleep(0.3)
+        fc_closed = evaluate("document.getElementById('flashcard-modal-container').children.length === 0")
+        assert fc_closed, "Expected flashcards modal to close"
+
+        # 12. Test 1-Page "Exam Morning" Cheat Sheet
+        print("\n--- Testing 1-Page Printable Cheat Sheet ---")
+        evaluate("document.getElementById('header-cheatsheet-btn').click()")
+        time.sleep(0.5)
+        cs_open = evaluate("Boolean(document.getElementById('printable-cheat-sheet'))")
+        cs_rows = evaluate("document.querySelectorAll('#printable-cheat-sheet tbody tr').length")
+        print(f"Cheat Sheet modal open: {cs_open}, summary rows rendered: {cs_rows}")
+        assert cs_open and cs_rows >= 4, "Expected Cheat Sheet to render all case study rows"
+
+        # Switch filter to Paper 1
+        evaluate("document.getElementById('cs-filter-p1').click()")
+        time.sleep(0.3)
+        p1_rows = evaluate("document.querySelectorAll('#printable-cheat-sheet tbody tr').length")
+        print(f"Cheat Sheet Paper 1 rows: {p1_rows}")
+        assert p1_rows > 0 and p1_rows < cs_rows, "Cheat Sheet filter should isolate Paper 1 studies"
+
+        # Close Cheat Sheet
+        evaluate("document.getElementById('cs-close-btn').click()")
+        time.sleep(0.3)
+        cs_closed = evaluate("document.getElementById('cheat-sheet-modal-container').children.length === 0")
+        assert cs_closed, "Expected Cheat Sheet to close"
+
+        # 13. Test Paper 3 Synoptic Matrix
+        print("\n--- Testing Paper 3 Synoptic Matrix ---")
+        evaluate("document.getElementById('header-synoptic-btn').click()")
+        time.sleep(0.5)
+        synoptic_open = evaluate("Boolean(document.getElementById('synoptic-close-btn'))")
+        print(f"Paper 3 matrix modal open: {synoptic_open}")
+        assert synoptic_open, "Expected Synoptic Matrix modal to open"
+
+        evaluate("document.getElementById('synoptic-close-btn').click()")
+        time.sleep(0.3)
+        synoptic_closed = evaluate("document.getElementById('synoptic-modal-container').children.length === 0")
+        assert synoptic_closed, "Expected Synoptic modal to close"
+
+        # Return to Main Menu before capturing final screenshot
+        evaluate("window.edexcelApp.showMainMenu()")
+        time.sleep(0.5)
+
+        # 14. Take screenshot
         screenshot_data = call_cdp("Page.captureScreenshot", {"format": "png"})
         if screenshot_data and "result" in screenshot_data and "data" in screenshot_data["result"]:
             img_bytes = base64.b64decode(screenshot_data["result"]["data"])

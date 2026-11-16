@@ -143,3 +143,71 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* 1-Page "Exam Morning" Cheat Sheet - Print Styles */
+@media print {
+  header,
+  #map-column,
+  #right-column,
+  #directory-view,
+  #study-detail-pane,
+  #floating-open-sidebar-btn,
+  #toast-notification,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  body, html {
+    background: white !important;
+    color: black !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  #cheat-sheet-modal-container {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: white !important;
+    padding: 0 !important;
+    z-index: 1 !important;
+  }
+
+  #cheat-sheet-modal-container > div {
+    position: static !important;
+    background: white !important;
+    padding: 0 !important;
+  }
+
+  #cheat-sheet-modal-container .max-h-\[94vh\] {
+    max-height: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+  }
+
+  #printable-cheat-sheet {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+}

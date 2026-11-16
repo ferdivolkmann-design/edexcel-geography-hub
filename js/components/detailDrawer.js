@@ -4,6 +4,8 @@
  * synoptic links, and statistics badges.
  */
 
+import { StorageService } from '../services/storage.js';
+
 export class DetailDrawer {
   constructor(containerId, options = {}) {
     this.containerId = containerId;
@@ -14,6 +16,8 @@ export class DetailDrawer {
     this.onFlyTo = options.onFlyTo || (() => {});
     this.onToggleExpand = options.onToggleExpand || (() => {});
     this.onMinimize = options.onMinimize || (() => {});
+    this.onOpenExamPractice = options.onOpenExamPractice || (() => {});
+    this.onConfidenceChanged = options.onConfidenceChanged || (() => {});
     this.examBlurActive = false;
     this.revealedBlocks = new Set(); // tracks which blurred blocks have been revealed
     this.currentStudy = null;
@@ -83,6 +87,11 @@ export class DetailDrawer {
       : 'bg-indigo-50 text-indigo-700 border-indigo-200';
 
     const headerBorderClass = isPhysical ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-indigo-500';
+
+    const ratings = StorageService.getConfidenceRatings();
+    const curRating = ratings[study.id] || 'needs-work';
+    const notesMap = StorageService.getStudentNotes();
+    const studentNote = notesMap[study.id] || '';
 
     // Helper for generating blur block HTML
     const renderBlurItem = (text, key, icon = '•', badge = null) => {
@@ -172,10 +181,22 @@ export class DetailDrawer {
               <span class="px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
                 ${study.topic}
               </span>
+
+              <!-- Recall Confidence Selector in Header -->
+              <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200" id="detail-conf-picker">
+                <button class="detail-conf-btn px-1.5 py-0.5 rounded text-[10px] font-bold transition ${curRating === 'needs-work' ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-400 hover:text-slate-700'}" data-rating="needs-work" title="Needs Work">🔴</button>
+                <button class="detail-conf-btn px-1.5 py-0.5 rounded text-[10px] font-bold transition ${curRating === 'reviewing' ? 'bg-amber-500 text-white shadow-xs' : 'text-slate-400 hover:text-slate-700'}" data-rating="reviewing" title="Reviewing">🟡</button>
+                <button class="detail-conf-btn px-1.5 py-0.5 rounded text-[10px] font-bold transition ${curRating === 'mastered' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-400 hover:text-slate-700'}" data-rating="mastered" title="Mastered">🟢</button>
+              </div>
             </div>
 
             <!-- Top Right: Actions & Side Tab Controls -->
-            <div class="flex items-center gap-1 shrink-0">
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button id="detail-exam-practice-btn" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition flex items-center gap-1 cursor-pointer" title="Practice 12 & 20-Mark Exam Questions">
+                <span>🎲</span>
+                <span class="hidden sm:inline">Practice Essay</span>
+              </button>
+
               <button id="detail-fly-btn" title="Center map here" class="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-slate-100 border border-transparent hover:border-slate-200 transition cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
               </button>
@@ -403,13 +424,28 @@ export class DetailDrawer {
             ` : ''
           }
 
-          <!-- Bottom Action Buttons: Back to Menu, Edit, and Delete -->
+          <!-- Student Personal Scratchpad & Essay Plan -->
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                <span>📝</span> My Revision Notes & 20-Mark Essay Plan (Auto-saved)
+              </span>
+              <span id="detail-note-saved-tag" class="text-[11px] font-semibold text-emerald-600 hidden">✅ Saved</span>
+            </div>
+            <textarea id="detail-student-notes-input" rows="3" placeholder="Draft your personal 20-mark evaluation plan, intro hooks, teacher notes, or mnemonics here..." class="w-full p-2.5 rounded-lg border border-slate-300 text-xs bg-white focus:ring-2 focus:ring-indigo-500 leading-relaxed">${studentNote}</textarea>
+          </div>
+
+          <!-- Bottom Action Buttons: Back to Menu, Practice, Edit, and Delete -->
           <div class="pt-6 pb-2 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
             <button id="detail-bottom-back-btn" class="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 font-bold text-xs transition flex items-center gap-1.5 cursor-pointer">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
               <span>Main Menu</span>
             </button>
             <div class="flex items-center gap-2">
+              <button id="detail-bottom-practice-btn" class="px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 font-bold text-xs transition flex items-center gap-1.5 cursor-pointer">
+                <span>🎲</span>
+                <span>Practice Essay Question</span>
+              </button>
               <button id="detail-bottom-edit-btn" class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 font-semibold text-xs transition flex items-center gap-1.5 cursor-pointer">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                 <span>Edit Case Study</span>
@@ -434,6 +470,12 @@ export class DetailDrawer {
 
     const bottomEditBtn = container.querySelector('#detail-bottom-edit-btn');
     if (bottomEditBtn) bottomEditBtn.onclick = () => this.onEdit(study);
+
+    const practiceBtn = container.querySelector('#detail-exam-practice-btn');
+    if (practiceBtn) practiceBtn.onclick = () => this.onOpenExamPractice(study);
+
+    const bottomPracticeBtn = container.querySelector('#detail-bottom-practice-btn');
+    if (bottomPracticeBtn) bottomPracticeBtn.onclick = () => this.onOpenExamPractice(study);
 
     const deleteBtn = container.querySelector('#detail-delete-btn');
     if (deleteBtn) deleteBtn.onclick = () => this.onDelete(study.id);
@@ -461,5 +503,29 @@ export class DetailDrawer {
 
     const hideAllBtn = container.querySelector('#blur-hide-all');
     if (hideAllBtn) hideAllBtn.onclick = () => this.hideAllBlocks();
+
+    // Confidence buttons in header
+    container.querySelectorAll('.detail-conf-btn').forEach(btn => {
+      btn.onclick = () => {
+        const rating = btn.dataset.rating;
+        StorageService.setConfidenceRating(study.id, rating);
+        this.onConfidenceChanged(study.id, rating);
+        this.render(study);
+      };
+    });
+
+    // Notes scratchpad auto-save
+    const notesInput = container.querySelector('#detail-student-notes-input');
+    const noteSavedTag = container.querySelector('#detail-note-saved-tag');
+    if (notesInput) {
+      notesInput.oninput = (e) => {
+        const val = e.target.value;
+        StorageService.setStudentNote(study.id, val);
+        if (noteSavedTag) {
+          noteSavedTag.classList.remove('hidden');
+          setTimeout(() => noteSavedTag.classList.add('hidden'), 2000);
+        }
+      };
+    }
   }
 }

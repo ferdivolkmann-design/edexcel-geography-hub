@@ -75,13 +75,36 @@
         <!-- Active Recall "Exam Blur" Toggle Button -->
         <button id="toggle-exam-blur" 
                 title="Active Recall Mode: Blurs all statistics and evaluation points for self-testing"
-                class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:border-amber-400 font-semibold text-xs transition-all flex items-center gap-1.5 shadow-sm">
+                class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:border-amber-400 font-semibold text-xs transition-all flex items-center gap-1.5 shadow-sm cursor-pointer">
           <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"></path>
           </svg>
-          <span class="hidden sm:inline">Exam Blur:</span>
-          <span class="sm:hidden">Blur:</span>
-          <span id="exam-blur-tag" class="ml-0.5 px-1.5 py-0.2 rounded text-[10px] bg-slate-200 text-slate-700 font-bold">OFF</span>
+          <span class="hidden sm:inline">Blur:</span>
+          <span id="exam-blur-tag" class="px-1.5 py-0.2 rounded text-[10px] bg-slate-200 text-slate-700 font-bold">OFF</span>
+        </button>
+
+        <!-- Flashcards Recall Trainer -->
+        <button id="header-flashcards-btn" 
+                title="Quick-Fire Flashcards (Active Recall & Traffic-Light Self-Rating)"
+                class="px-2.5 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50/70 hover:bg-indigo-100 text-indigo-700 font-bold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer">
+          <span>🗂️</span>
+          <span class="hidden md:inline">Flashcards</span>
+        </button>
+
+        <!-- Exam Morning Cheat Sheet -->
+        <button id="header-cheatsheet-btn" 
+                title="Printable 1-Page 'Exam Morning' Cheat Sheet"
+                class="px-2.5 py-1.5 rounded-lg border border-emerald-200 bg-emerald-50/70 hover:bg-emerald-100 text-emerald-800 font-bold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer">
+          <span>🖨️</span>
+          <span class="hidden md:inline">Cheat Sheet</span>
+        </button>
+
+        <!-- Paper 3 Synoptic Matrix -->
+        <button id="header-synoptic-btn" 
+                title="Paper 3 Synoptic Matrix: Players, Attitudes, Actions, Futures"
+                class="px-2.5 py-1.5 rounded-lg border border-purple-200 bg-purple-50/70 hover:bg-purple-100 text-purple-800 font-bold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer">
+          <span>🌐</span>
+          <span class="hidden lg:inline">Paper 3 Matrix</span>
         </button>
 
         <!-- Add Case Study Button -->
@@ -245,29 +268,40 @@
             <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
           </div>
 
-          <!-- Category Tabs & Edexcel Topic Dropdown -->
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            
-            <!-- Category Tabs -->
-            <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-xs">
-              <button class="cat-tab-btn px-3 py-1 rounded-md text-xs font-bold bg-indigo-600 text-white shadow-sm transition" data-category="All">
-                All (<span id="count-total">0</span>)
+          <!-- Paper Tabs & Topic / Confidence Filters -->
+          <div class="space-y-2">
+            <!-- Paper Tabs -->
+            <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-xs overflow-x-auto">
+              <button class="paper-tab-btn px-2.5 py-1 rounded-md text-xs font-bold bg-indigo-600 text-white shadow-xs transition shrink-0 cursor-pointer" data-paper="All">
+                All Papers (<span id="count-total">0</span>)
               </button>
-              <button class="cat-tab-btn px-3 py-1 rounded-md text-xs font-semibold text-slate-600 hover:bg-slate-200 transition" data-category="Physical">
-                Physical
+              <button class="paper-tab-btn px-2.5 py-1 rounded-md text-xs font-semibold text-slate-600 hover:bg-slate-200 transition shrink-0 cursor-pointer" data-paper="Paper 1">
+                Paper 1 (Physical)
               </button>
-              <button class="cat-tab-btn px-3 py-1 rounded-md text-xs font-semibold text-slate-600 hover:bg-slate-200 transition" data-category="Human">
-                Human
+              <button class="paper-tab-btn px-2.5 py-1 rounded-md text-xs font-semibold text-slate-600 hover:bg-slate-200 transition shrink-0 cursor-pointer" data-paper="Paper 2">
+                Paper 2 (Human)
+              </button>
+              <button class="paper-tab-btn px-2.5 py-1 rounded-md text-xs font-semibold text-slate-600 hover:bg-slate-200 transition shrink-0 cursor-pointer" data-paper="Paper 3">
+                Paper 3 (Synoptic)
               </button>
             </div>
 
-            <!-- Edexcel Topic Dropdown -->
-            <div class="flex-1 min-w-[180px]">
-              <select id="topic-filter" class="w-full py-1.5 px-2.5 rounded-lg border border-slate-300 bg-white text-xs font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500">
-                <option value="All">All Edexcel Topics</option>
-              </select>
+            <!-- Edexcel Topic Dropdown & Confidence Filter -->
+            <div class="flex items-center gap-2">
+              <div class="flex-1 min-w-0">
+                <select id="topic-filter" class="w-full py-1.5 px-2.5 rounded-lg border border-slate-300 bg-white text-xs font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500">
+                  <option value="All">All Edexcel Topics</option>
+                </select>
+              </div>
+              <div class="w-36 shrink-0">
+                <select id="confidence-filter" class="w-full py-1.5 px-2 rounded-lg border border-slate-300 bg-white text-xs font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500">
+                  <option value="All">All Mastery</option>
+                  <option value="mastered">🟢 Mastered</option>
+                  <option value="reviewing">🟡 Reviewing</option>
+                  <option value="needs-work">🔴 Needs Work</option>
+                </select>
+              </div>
             </div>
-
           </div>
 
         </div>
@@ -302,6 +336,18 @@
 
   <!-- Add / Edit Modal Container -->
   <div id="study-modal-container"></div>
+
+  <!-- Exam Practice Modal Container -->
+  <div id="exam-practice-modal-container"></div>
+
+  <!-- Flashcards Recall Trainer Modal Container -->
+  <div id="flashcard-modal-container"></div>
+
+  <!-- Printable 1-Page Cheat Sheet Modal Container -->
+  <div id="cheat-sheet-modal-container"></div>
+
+  <!-- Paper 3 Synoptic Framework Matrix Modal Container -->
+  <div id="synoptic-modal-container"></div>
 
   <!-- Application Bootstrap & View Controller -->
   <script type="module" src="js/app.js"></script>

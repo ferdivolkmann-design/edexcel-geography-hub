@@ -19,6 +19,136 @@ export const EDEXCEL_TOPICS = {
   ]
 };
 
+export const EDEXCEL_PAPERS = {
+  'Paper 1': [
+    'Tectonic Processes & Hazards',
+    'Coastal Landscapes & Change',
+    'The Water Cycle & Water Insecurity',
+    'The Carbon Cycle & Energy Security'
+  ],
+  'Paper 2': [
+    'Globalisation',
+    'Regenerating Places',
+    'Superpowers',
+    'Health, Human Rights & Intervention',
+    'Migration, Identity & Sovereignty'
+  ],
+  'Paper 3': [
+    'Synoptic Investigation (Cross-Theme: Players, Attitudes, Actions & Futures)'
+  ]
+};
+
+export const SAMPLE_EXAM_QUESTIONS = {
+  'Tectonic Processes & Hazards': [
+    {
+      marks: 12,
+      command: 'Assess',
+      question: 'Assess the relative importance of warning systems versus physical engineering in reducing the impacts of tectonic hazards.',
+      timeMinutes: 18,
+      ao1Key: 'Include place-specific statistics (e.g. JMA 8-second early warning, bullet train stops, 40.5m tsunami run-up, $235B loss).',
+      ao2Key: 'Evaluate contrast between short-term warning evacuation success and long-term infrastructure limitations (e.g. seawall overtopping, complacency).'
+    },
+    {
+      marks: 20,
+      command: 'Evaluate',
+      question: 'Evaluate the view that economic development is the most significant factor determining a community\'s resilience to tectonic hazards.',
+      timeMinutes: 35,
+      ao1Key: 'Compare high-income preparedness (Japan 2011 building codes, aseismic design) with lower-income vulnerability (Haiti 2010).',
+      ao2Key: 'Critique the argument: high GDP reduces mortality but exponentially increases absolute economic cost; evaluate governance vs physical magnitude.'
+    }
+  ],
+  'Coastal Landscapes & Change': [
+    {
+      marks: 12,
+      command: 'Assess',
+      question: 'Assess the role of human interference in exacerbating coastal erosion along rapidly retreating coastlines.',
+      timeMinutes: 18,
+      ao1Key: 'Quantify erosion rates (1.8-2.0m/yr boulder clay retreat, £2M Mappleton scheme, 10m/yr down-drift surge).',
+      ao2Key: 'Assess terminal groyne syndrome starved sediment down-drift vs physical geology (unconsolidated till, long fetch).'
+    },
+    {
+      marks: 20,
+      command: 'Evaluate',
+      question: 'Evaluate the extent to which sustainable coastal management schemes can balance economic assets against ecological sustainability.',
+      timeMinutes: 35,
+      ao1Key: 'Contrast hard engineering (groynes, revetments) with soft engineering / managed realignment (SMP policy units).',
+      ao2Key: 'Evaluate cost-benefit ratios: defending high-value infrastructure (gas terminals, roads) vs allowing rural farmland erosion; short vs long-term sea-level rise.'
+    }
+  ],
+  'Regenerating Places': [
+    {
+      marks: 12,
+      command: 'Assess',
+      question: 'Assess the reasons why perceptions of urban regeneration schemes vary between different local community groups.',
+      timeMinutes: 18,
+      ao1Key: 'Use London Docklands and Stratford Olympic legacy data (£7.7B private investment, 120,000 Canary Wharf finance jobs, 47.5% child poverty in Tower Hamlets).',
+      ao2Key: 'Assess conflicting stakeholders: affluent inward commuters/professionals vs displaced working-class residents facing gentrification and lack of affordable housing.'
+    },
+    {
+      marks: 20,
+      command: 'Evaluate',
+      question: 'Evaluate the success of property-led and prestige project regeneration strategies in reducing economic inequality.',
+      timeMinutes: 35,
+      ao1Key: 'Cite London Docklands LDDC deregulated enterprise zones, Canary Wharf expansion, and London 2012 legacy targets.',
+      ao2Key: 'Evaluate trickledown theory limitations: high-skill tertiary jobs vs low-skill local residents; social polarization vs regional GDP growth.'
+    }
+  ],
+  'Superpowers': [
+    {
+      marks: 12,
+      command: 'Assess',
+      question: 'Assess the extent to which economic mechanisms (e.g. trade networks, foreign aid) have superseded military power in asserting superpower influence.',
+      timeMinutes: 18,
+      ao1Key: 'Quote Belt and Road Initiative (BRI) figures ($1.05T+ financing across 140+ countries, $62B CPEC, Hambantota 99-yr lease).',
+      ao2Key: 'Assess debt-trap diplomacy allegations and geo-economic soft power vs traditional military power projection (South China Sea bases).'
+    },
+    {
+      marks: 20,
+      command: 'Evaluate',
+      question: 'Evaluate the environmental, economic, and geopolitical implications of rising emerging superpowers on global stability.',
+      timeMinutes: 35,
+      ao1Key: 'Include BRI corridors, fossil fuel infrastructure funding, rare earth mineral monopolies, and African resource investment.',
+      ao2Key: 'Evaluate multipolar rivalry: economic development in developing global south vs rising carbon emissions, sovereign debt risks, and Western tensions.'
+    }
+  ],
+  'The Water Cycle & Water Insecurity': [
+    {
+      marks: 12,
+      command: 'Assess',
+      question: 'Assess the relative importance of physical and human factors in causing acute water insecurity in developed nations.',
+      timeMinutes: 18,
+      ao1Key: 'California drought statistics: 80% agricultural consumption (almonds/alfalfa), 8.5m San Joaquin aquifer subsidence, Sierra Nevada snowpack decline.',
+      ao2Key: 'Assess meteorological drought (ENSO, high-pressure ridges) vs human mismanagement (over-allocation of Colorado River, subsidized farming).'
+    },
+    {
+      marks: 20,
+      command: 'Evaluate',
+      question: 'Evaluate the sustainability of hard-engineering water mega-projects compared to water conservation and recycling strategies.',
+      timeMinutes: 35,
+      ao1Key: 'California State Water Project, $1B Carlsbad Desalination plant (200M litres/day, 4 kWh/m3 energy), and Orange County toilet-to-tap recycling.',
+      ao2Key: 'Evaluate economic cost, greenhouse gas emissions from reverse osmosis, brine marine damage vs reliability under severe climate change.'
+    }
+  ],
+  'Globalisation': [
+    {
+      marks: 12,
+      command: 'Assess',
+      question: 'Assess the role of transnational corporations (TNCs) in driving the global shift of manufacturing to developing and emerging economies.',
+      timeMinutes: 18,
+      ao1Key: 'Apple & Foxconn data: Zhengzhou iPhone City (350,000 workers, 500k phones/day, 58% Apple gross margin, $22/day starting wages).',
+      ao2Key: 'Assess push factors (Western high labor costs, environmental regulations) vs pull factors (SEZs, low wages, government subsidies, containerization).'
+    },
+    {
+      marks: 20,
+      command: 'Evaluate',
+      question: 'Evaluate the economic benefits against the social and environmental costs of globalisation for emerging host economies.',
+      timeMinutes: 35,
+      ao1Key: 'Chinese GDP surge and poverty reduction vs Foxconn working conditions (dormitories, working hours) and toxic e-waste.',
+      ao2Key: 'Evaluate multiplier effect and industrialization vs labor exploitation, lack of technology transfer (Foxconn retains only ~2-3% of iPhone value), and environmental degradation.'
+    }
+  ]
+};
+
 export const INITIAL_CASE_STUDIES = [
   {
     id: "cs-tohoku-2011",

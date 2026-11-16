@@ -1,7 +1,9 @@
 /**
  * Card List Component - Renders the filterable, searchable list of case study cards
- * with category tabs, topic pills, and synced selection state.
+ * with Paper tabs, Confidence filters, mastery tracker, and synced selection state.
  */
+import { EDEXCEL_PAPERS } from '../data/initialData.js';
+import { StorageService } from '../services/storage.js';
 
 export class CardList {
   constructor(containerId, options = {}) {
@@ -9,9 +11,12 @@ export class CardList {
     this.onSelect = options.onSelect || (() => {});
     this.onFlyTo = options.onFlyTo || (() => {});
     this.onDelete = options.onDelete || (() => {});
+    this.onConfidenceChanged = options.onConfidenceChanged || (() => {});
     
     this.searchQuery = '';
     this.selectedCategory = 'All'; // 'All' | 'Physical' | 'Human'
+    this.selectedPaper = 'All'; // 'All' | 'Paper 1' | 'Paper 2' | 'Paper 3'
+    this.selectedConfidence = 'All'; // 'All' | 'needs-work' | 'reviewing' | 'mastered'
     this.selectedTopic = 'All';
     this.selectedId = null;
     this.caseStudies = [];
@@ -40,10 +45,12 @@ export class CardList {
     this.render();
   }
 
-  setFilters(category, topic, query) {
+  setFilters(category, topic, query, paper, confidence) {
     if (category !== undefined) this.selectedCategory = category;
     if (topic !== undefined) this.selectedTopic = topic;
     if (query !== undefined) this.searchQuery = query.toLowerCase().trim();
+    if (paper !== undefined) this.selectedPaper = paper;
+    if (confidence !== undefined) this.selectedConfidence = confidence;
     this.render();
   }
 
@@ -52,6 +59,28 @@ export class CardList {
       // Category filter
       if (this.selectedCategory !== 'All' && study.category !== this.selectedCategory) {
         return false;
+      }
+
+      // Paper filter (Paper 1 / Paper 2 / Paper 3)
+      if (this.selectedPaper && this.selectedPaper !== 'All') {
+        if (this.selectedPaper === 'Paper 1' && !EDEXCEL_PAPERS['Paper 1'].includes(study.topic)) {
+          return false;
+        }
+        if (this.selectedPaper === 'Paper 2' && !EDEXCEL_PAPERS['Paper 2'].includes(study.topic)) {
+          return false;
+        }
+        if (this.selectedPaper === 'Paper 3' && (!study.synopticLinks || study.synopticLinks.length === 0)) {
+          return false;
+        }
+      }
+
+      // Confidence filter
+      if (this.selectedConfidence && this.selectedConfidence !== 'All') {
+        const ratings = StorageService.getConfidenceRatings();
+        const curRating = ratings[study.id] || 'needs-work';
+        if (curRating !== this.selectedConfidence) {
+          return false;
+        }
       }
 
       // Topic filter
@@ -88,21 +117,54 @@ export class CardList {
     if (!container) return;
 
     const filtered = this.getFilteredStudies();
+    const ratings = StorageService.getConfidenceRatings();
 
-    // Render counts
+    // Render mastery counts
     const totalCount = this.caseStudies.length;
-    const physCount = this.caseStudies.filter(s => s.category === 'Physical').length;
-    const humCount = this.caseStudies.filter(s => s.category === 'Human').length;
+    let masteredCount = 0;
+    let reviewingCount = 0;
+    let needsWorkCount = 0;
+
+    this.caseStudies.forEach(s => {
+      const r = ratings[s.id] || 'needs-work';
+      if (r === 'mastered') masteredCount++;
+      else if (r === 'reviewing') reviewingCount++;
+      else needsWorkCount++;
+    });
+
+    const masteredPct = totalCount > 0 ? Math.round((masteredCount / totalCount) * 100) : 0;
+
+    const masteryBannerHtml = `
+      <div class="p-3 rounded-xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white shadow-sm flex flex-col gap-2 mb-3">
+        <div class="flex items-center justify-between text-xs">
+          <div class="flex items-center gap-1.5 font-bold">
+            <span>🎯 Exam Mastery:</span>
+            <span class="text-emerald-400 font-extrabold">${masteredCount}/${totalCount} Mastered (${masteredPct}%)</span>
+          </div>
+          <div class="flex items-center gap-2 text-[11px] font-semibold text-slate-300">
+            <span title="Mastered" class="flex items-center gap-0.5">🟢 ${masteredCount}</span>
+            <span title="Reviewing" class="flex items-center gap-0.5">🟡 ${reviewingCount}</span>
+            <span title="Needs Work" class="flex items-center gap-0.5">🔴 ${needsWorkCount}</span>
+          </div>
+        </div>
+        <div class="w-full bg-slate-800/80 h-1.5 rounded-full overflow-hidden flex">
+          <div class="bg-emerald-500 h-full transition-all duration-300" style="width: ${totalCount ? (masteredCount/totalCount)*100 : 0}%"></div>
+          <div class="bg-amber-400 h-full transition-all duration-300" style="width: ${totalCount ? (reviewingCount/totalCount)*100 : 0}%"></div>
+          <div class="bg-rose-500 h-full transition-all duration-300" style="width: ${totalCount ? (needsWorkCount/totalCount)*100 : 0}%"></div>
+        </div>
+      </div>
+    `;
 
     if (filtered.length === 0) {
       container.innerHTML = `
-        <div class="p-8 text-center text-slate-400">
+        ${masteryBannerHtml}
+        <div class="p-8 text-center text-slate-400 bg-white rounded-xl border border-slate-200">
           <svg class="w-12 h-12 mx-auto mb-3 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
           <p class="text-sm font-semibold text-slate-600 mb-1">No matching case studies</p>
           <p class="text-xs text-slate-400 max-w-xs mx-auto">
-            Try adjusting your search keywords, clearing your topic filter, or adding a new case study.
+            Try adjusting your search keywords, clearing your topic filter, or resetting paper/confidence filters.
           </p>
           <button id="clear-filters-btn" class="mt-4 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition">
             Reset All Filters
@@ -114,6 +176,8 @@ export class CardList {
       if (resetBtn) {
         resetBtn.onclick = () => {
           this.selectedCategory = 'All';
+          this.selectedPaper = 'All';
+          this.selectedConfidence = 'All';
           this.selectedTopic = 'All';
           this.searchQuery = '';
           const searchInput = document.getElementById('search-input');
@@ -127,9 +191,10 @@ export class CardList {
       return;
     }
 
-    container.innerHTML = filtered.map(study => {
+    const cardsHtml = filtered.map(study => {
       const isSelected = study.id === this.selectedId;
       const isPhysical = study.category === 'Physical';
+      const curRating = ratings[study.id] || 'needs-work';
 
       const borderClass = isSelected 
         ? (isPhysical ? 'border-emerald-500 ring-2 ring-emerald-400/40 bg-emerald-50/20' : 'border-indigo-500 ring-2 ring-indigo-400/40 bg-indigo-50/20')
@@ -181,15 +246,22 @@ export class CardList {
             ${study.summary}
           </p>
 
-          <!-- Metrics Footer -->
-          <div class="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-100">
-            <div class="flex items-center gap-2.5">
+          <!-- Metrics and Confidence Traffic Light Footer -->
+          <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-500 pt-2.5 border-t border-slate-100 gap-2">
+            <div class="flex items-center gap-2">
               <span class="flex items-center gap-1 font-medium ${this.examBlurActive ? 'text-amber-600' : 'text-slate-600'}">
-                📊 ${statsCount} Stats
+                📊 ${statsCount}
               </span>
               <span class="flex items-center gap-1 font-medium text-purple-600">
-                ⚖️ ${evalTotal} AO2 Points
+                ⚖️ ${evalTotal} AO2
               </span>
+            </div>
+
+            <!-- Recall Confidence Selector -->
+            <div class="confidence-picker flex items-center gap-1 bg-slate-50 p-0.5 rounded-lg border border-slate-200" data-study-id="${study.id}">
+              <button class="conf-btn px-1.5 py-0.5 rounded text-[10px] font-bold transition ${curRating === 'needs-work' ? 'bg-rose-600 text-white shadow-xs' : 'text-slate-400 hover:text-slate-700'}" data-rating="needs-work" title="Needs Work">🔴</button>
+              <button class="conf-btn px-1.5 py-0.5 rounded text-[10px] font-bold transition ${curRating === 'reviewing' ? 'bg-amber-500 text-white shadow-xs' : 'text-slate-400 hover:text-slate-700'}" data-rating="reviewing" title="Reviewing">🟡</button>
+              <button class="conf-btn px-1.5 py-0.5 rounded text-[10px] font-bold transition ${curRating === 'mastered' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-400 hover:text-slate-700'}" data-rating="mastered" title="Mastered">🟢</button>
             </div>
 
             <span class="text-indigo-600 font-semibold group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
@@ -200,9 +272,25 @@ export class CardList {
       `;
     }).join('');
 
+    container.innerHTML = `${masteryBannerHtml}<div class="space-y-3">${cardsHtml}</div>`;
+
     // Attach card click handlers
     container.querySelectorAll('[data-card-id]').forEach(el => {
       el.addEventListener('click', (e) => {
+        // If clicking confidence button
+        const confBtn = e.target.closest('.conf-btn');
+        if (confBtn) {
+          e.stopPropagation();
+          const rating = confBtn.dataset.rating;
+          const studyId = confBtn.closest('.confidence-picker')?.dataset.studyId;
+          if (studyId && rating) {
+            StorageService.setConfidenceRating(studyId, rating);
+            this.onConfidenceChanged(studyId, rating);
+            this.render();
+          }
+          return;
+        }
+
         // If clicking delete button
         if (e.target.closest('.card-delete-btn')) {
           e.stopPropagation();
