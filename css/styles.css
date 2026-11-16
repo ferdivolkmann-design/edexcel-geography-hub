@@ -1,0 +1,145 @@
+/* Custom Styles for Edexcel A-Level Geography Case Study Hub */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleUp {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+.animate-scaleUp {
+  animation: scaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.7);
+}
+
+/* Leaflet Customizations */
+#map-column {
+  min-height: 380px;
+}
+
+#map-container {
+  width: 100%;
+  height: 100%;
+  min-height: 380px;
+  background-color: #cbd5e1;
+}
+
+/* Collapsible and Expandable Case Studies Sidebar */
+#right-column {
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+              max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+              opacity 0.25s ease;
+  will-change: width, max-width;
+}
+
+#right-column.sidebar-minimized {
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+  border-left-width: 0 !important;
+  padding: 0 !important;
+  visibility: hidden;
+}
+
+#right-column.sidebar-expanded {
+  width: 78vw !important;
+  max-width: 86vw !important;
+}
+
+.leaflet-container {
+  font-family: inherit;
+  background-color: #f8fafc;
+  outline: none;
+  width: 100%;
+  height: 100%;
+}
+
+.leaflet-custom-div-icon {
+  background: transparent;
+  border: none;
+}
+
+/* Ensure popups always render on top of all map controls, toolbars, and tiles */
+.leaflet-popup-pane {
+  z-index: 3000 !important;
+}
+
+.leaflet-popup {
+  z-index: 3000 !important;
+}
+
+.custom-leaflet-popup {
+  z-index: 3000 !important;
+}
+
+.custom-leaflet-popup .leaflet-popup-content-wrapper {
+  border-radius: 0.75rem;
+  padding: 0.25rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.custom-leaflet-popup .leaflet-popup-content {
+  margin: 0.5rem;
+  line-height: 1.4;
+}
+
+.custom-leaflet-popup .leaflet-popup-tip {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Map Coordinate Picker Cursor */
+.cursor-crosshair, .cursor-crosshair .leaflet-container {
+  cursor: crosshair !important;
+}
+
+/* Active Recall Frosted Blur */
+.blur-active-block {
+  filter: blur(5px);
+  user-select: none;
+  opacity: 0.35;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Line clamp utilities if needed */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

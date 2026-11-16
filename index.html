@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edexcel A-Level Geography Case Study Hub</title>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            edexcel: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+              800: '#0c4a6e',
+              900: '#082f49',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased h-screen flex flex-col overflow-hidden">
+
+  <!-- Top Navigation Header -->
+  <header class="bg-white border-b border-slate-200 px-4 py-2.5 shrink-0 z-30 shadow-sm">
+    <div class="flex items-center justify-between gap-4">
+      
+      <!-- Brand & Specification Badge -->
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-sky-600 to-emerald-500 flex items-center justify-center text-white shadow-md shadow-indigo-200 font-black text-lg">
+          🌍
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-bold text-base sm:text-lg text-slate-900 leading-tight">
+              Edexcel Geography Hub
+            </h1>
+            <span class="hidden md:inline-block px-2 py-0.5 text-[10px] font-bold rounded-full bg-sky-100 text-sky-800 border border-sky-200">
+              Pearson Edexcel 9GE0
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-500 hidden sm:block">
+            Case Study Revision • Place-Specific Stats • AO2 12/20-Mark Evaluations
+          </p>
+        </div>
+      </div>
+
+      <!-- Action Center -->
+      <div class="flex items-center gap-2 sm:gap-2.5">
+        
+        <!-- Active Recall "Exam Blur" Toggle Button -->
+        <button id="toggle-exam-blur" 
+                title="Active Recall Mode: Blurs all statistics and evaluation points for self-testing"
+                class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:border-amber-400 font-semibold text-xs transition-all flex items-center gap-1.5 shadow-sm">
+          <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"></path>
+          </svg>
+          <span class="hidden sm:inline">Exam Blur:</span>
+          <span class="sm:hidden">Blur:</span>
+          <span id="exam-blur-tag" class="ml-0.5 px-1.5 py-0.2 rounded text-[10px] bg-slate-200 text-slate-700 font-bold">OFF</span>
+        </button>
+
+        <!-- Add Case Study Button -->
+        <button id="add-study-btn" 
+                class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          <span class="hidden sm:inline">New Case Study</span>
+          <span class="sm:hidden">Add</span>
+        </button>
+
+        <!-- Toggle Case Studies Sidebar Button -->
+        <button id="header-toggle-sidebar" 
+                title="Toggle Case Studies Sidebar (Minimize / Restore)"
+                class="hidden lg:flex px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold items-center gap-1.5 shadow-sm transition">
+          <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+          <span id="header-sidebar-label">Side Tab</span>
+        </button>
+
+        <!-- Dropdown / More Actions Menu -->
+        <div class="relative group">
+          <button class="p-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
+            <span class="hidden md:inline">Tools</span>
+          </button>
+          
+          <div class="absolute right-0 top-full mt-1 w-56 bg-white rounded-xl shadow-xl border border-slate-200 p-1.5 hidden group-hover:block hover:block z-50 animate-fadeIn">
+            <div class="px-2.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              Data Backup & Sharing
+            </div>
+            <button id="export-json-btn" class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 flex items-center gap-2">
+              <span>💾</span> Export JSON Backup
+            </button>
+            <button id="import-json-btn" class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 flex items-center gap-2">
+              <span>📂</span> Import JSON Backup
+            </button>
+            <button id="export-md-btn" class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 flex items-center gap-2">
+              <span>📝</span> Export Markdown Revision Book
+            </button>
+            <div class="border-t border-slate-100 my-1"></div>
+            <button id="reset-defaults-btn" class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium text-rose-600 hover:bg-rose-50 flex items-center gap-2">
+              <span>🔄</span> Reset to Edexcel Sample Data
+            </button>
+          </div>
+        </div>
+
+        <!-- Hidden input for file import -->
+        <input type="file" id="import-json-input" accept=".json" class="hidden">
+      </div>
+    </div>
+
+    <!-- Mobile view switch tab bar (only on small screens) -->
+    <div class="flex lg:hidden mt-2 pt-2 border-t border-slate-100 justify-center gap-2">
+      <button id="mob-tab-map" class="px-4 py-1 rounded-lg text-xs font-bold bg-indigo-600 text-white">
+        🗺️ Map View
+      </button>
+      <button id="mob-tab-list" class="px-4 py-1 rounded-lg text-xs font-bold text-slate-600">
+        📚 Case Studies List
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Split-Screen Workspace -->
+  <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+
+    <!-- Left / Center Pane: Interactive Leaflet Map -->
+    <section id="map-column" class="flex-1 h-full relative flex flex-col border-r border-slate-200 z-10">
+      
+      <!-- Floating Map Toolbar (z-[500] so popups & modals float over it) -->
+      <div class="absolute top-3 left-3 z-[500] flex flex-wrap items-center gap-2 pointer-events-none">
+        
+        <!-- Legend Pills -->
+        <div class="pointer-events-auto bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl shadow-lg border border-slate-200/80 flex items-center gap-3 text-xs">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-400"></span>
+            <span class="font-bold text-slate-700">Physical (<span id="count-phys">0</span>)</span>
+          </div>
+          <span class="text-slate-300">|</span>
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-indigo-500 shadow-sm shadow-indigo-400"></span>
+            <span class="font-bold text-slate-700">Human (<span id="count-hum">0</span>)</span>
+          </div>
+        </div>
+
+        <!-- Latin Script Badge -->
+        <div class="pointer-events-auto bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-xl shadow-lg border border-slate-200/80 flex items-center gap-1 text-xs font-bold text-indigo-700">
+          <span>🔤</span>
+          <span>Latin Alphabet Labels</span>
+        </div>
+
+        <!-- Add on Map Button -->
+        <button id="map-add-pin-btn" 
+                title="Click to drop a pin anywhere on the world map to create a case study (or Right-Click on the map anytime)"
+                class="pointer-events-auto bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl shadow-lg border border-slate-200/80 hover:border-indigo-400 text-xs font-bold text-slate-700 hover:text-indigo-600 transition flex items-center gap-1.5 cursor-pointer">
+          <span class="text-indigo-600">➕</span>
+          <span>Add on Map</span>
+        </button>
+
+        <!-- Map Style Selector -->
+        <div class="pointer-events-auto bg-white/95 backdrop-blur-md px-2 py-1 rounded-xl shadow-lg border border-slate-200/80 flex items-center text-xs">
+          <span class="text-slate-400 mr-1.5 text-[11px] font-medium hidden sm:inline">Tiles:</span>
+          <select id="map-style-select" class="bg-transparent font-medium text-slate-700 text-xs focus:outline-none cursor-pointer">
+            <option value="esriStreet" selected>Esri World Street (Latin - Guaranteed)</option>
+            <option value="esriTopo">Esri World Topo (Latin Relief)</option>
+            <option value="natGeo">National Geographic (Latin)</option>
+            <option value="satellite">Satellite + Latin Labels</option>
+            <option value="voyager">CartoDB Voyager (Latin)</option>
+            <option value="positron">CartoDB Positron (Clean Light)</option>
+            <option value="osm">OpenStreetMap Standard</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- Leaflet Map Container -->
+      <div id="map-container" class="w-full h-full"></div>
+    </section>
+
+    <!-- Right Pane: Searchable Case Studies & Detail Reader -->
+    <section id="right-column" class="w-full lg:w-[560px] xl:w-[680px] 2xl:w-[760px] h-full flex flex-col bg-white shrink-0 z-10 shadow-lg relative overflow-hidden">
+      
+      <!-- View 1: Main Menu / Directory View (Takes up the whole tab when active) -->
+      <div id="directory-view" class="w-full h-full flex flex-col bg-slate-50/50">
+        
+        <!-- Main Menu Top Header: Title, Controls, Search Bar, Categories & Topic Filter -->
+        <div id="directory-header" class="p-3.5 border-b border-slate-200 bg-white shrink-0 space-y-2.5 shadow-xs">
+          
+          <!-- Side Drawer Toolbar: Title & Expand / Minimize Controls -->
+          <div class="flex items-center justify-between gap-2 pb-1 border-b border-slate-100">
+            <div class="flex items-center gap-2 text-xs font-bold text-slate-800">
+              <span class="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
+              <span>All Case Studies (Main Menu)</span>
+              <span id="directory-count-badge" class="px-2 py-0.5 rounded-full text-[10px] bg-indigo-50 text-indigo-700 font-bold border border-indigo-200">
+                0
+              </span>
+            </div>
+
+            <div class="flex items-center gap-1">
+              <!-- Expand / Wide Toggle Button -->
+              <button id="sidebar-expand-btn" 
+                      title="Toggle Wide Reading View (78% screen width)" 
+                      class="px-2 py-0.5 rounded-md text-[11px] font-semibold text-slate-600 hover:text-indigo-600 hover:bg-slate-100 transition flex items-center gap-1 border border-transparent hover:border-slate-300 cursor-pointer">
+                <svg id="expand-icon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+                <span id="sidebar-expand-text">Expand</span>
+              </button>
+
+              <!-- Minimize Button -->
+              <button id="sidebar-minimize-btn" 
+                      title="Minimize Side Tab (Full-Screen Map)" 
+                      class="px-2 py-0.5 rounded-md text-[11px] font-semibold text-slate-600 hover:text-rose-600 hover:bg-slate-100 transition flex items-center gap-1 border border-transparent hover:border-slate-300 cursor-pointer">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                <span>Minimize</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Search bar -->
+          <div class="relative">
+            <input type="text" id="search-input" 
+                   placeholder="Search topics, stats, locations, keywords (e.g. 'tsunami', 'Mappleton', 'Canary Wharf')..."
+                   class="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm">
+            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+
+          <!-- Category Tabs & Edexcel Topic Dropdown -->
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            
+            <!-- Category Tabs -->
+            <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-xs">
+              <button class="cat-tab-btn px-3 py-1 rounded-md text-xs font-bold bg-indigo-600 text-white shadow-sm transition" data-category="All">
+                All (<span id="count-total">0</span>)
+              </button>
+              <button class="cat-tab-btn px-3 py-1 rounded-md text-xs font-semibold text-slate-600 hover:bg-slate-200 transition" data-category="Physical">
+                Physical
+              </button>
+              <button class="cat-tab-btn px-3 py-1 rounded-md text-xs font-semibold text-slate-600 hover:bg-slate-200 transition" data-category="Human">
+                Human
+              </button>
+            </div>
+
+            <!-- Edexcel Topic Dropdown -->
+            <div class="flex-1 min-w-[180px]">
+              <select id="topic-filter" class="w-full py-1.5 px-2.5 rounded-lg border border-slate-300 bg-white text-xs font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500">
+                <option value="All">All Edexcel Topics</option>
+              </select>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Case Studies Card List View -->
+        <div id="case-study-list-pane" class="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3">
+          <div id="case-study-list-container" class="space-y-3">
+            <!-- Rendered by CardList component -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- View 2: Detailed Study Reader View (Takes up the WHOLE of the tab) -->
+      <div id="study-detail-pane" class="w-full h-full flex flex-col hidden bg-white">
+        <div id="study-detail-container" class="h-full">
+          <!-- Rendered by DetailDrawer component -->
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Floating Launcher Tab when Side Tab is Minimized -->
+  <button id="floating-open-sidebar-btn" 
+          title="Open Case Studies Tab"
+          class="fixed top-1/2 right-0 -translate-y-1/2 z-40 hidden bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-4 rounded-l-2xl shadow-2xl font-bold text-xs flex flex-col items-center gap-2 transition-transform hover:-translate-x-1 cursor-pointer border-t border-b border-l border-indigo-400">
+    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+    <span class="[writing-mode:vertical-lr] tracking-widest text-[11px] uppercase font-bold text-indigo-100">Case Studies</span>
+  </button>
+
+  <!-- Add / Edit Modal Container -->
+  <div id="study-modal-container"></div>
+
+  <!-- Application Bootstrap & View Controller -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
